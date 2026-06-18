@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>資金調整 - 平台管理</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang TC','Microsoft JhengHei',sans-serif;background:#f0f2f5;color:#333;font-size:13px}
+.layout{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:180px;background:#001529;flex-shrink:0;display:flex;flex-direction:column;overflow-y:auto}
+.sidebar-logo{padding:14px 12px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:8px;flex-shrink:0}
+.logo-icon{width:28px;height:28px;background:#1890ff;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+.logo-text{color:#fff;font-size:12px;font-weight:600;line-height:1.3}
+.logo-sub{color:rgba(255,255,255,0.4);font-size:10px}
+.menu-group{padding:5px 12px 3px;color:rgba(255,255,255,0.3);font-size:10px;margin-top:6px}
+.menu-item{display:flex;align-items:center;gap:8px;padding:8px 16px;color:rgba(255,255,255,0.65);cursor:pointer;font-size:12px;transition:all .15s;user-select:none}
+.menu-item:hover{color:#fff;background:rgba(255,255,255,0.08)}
+.menu-item.active{color:#1890ff;background:#111d2c}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{height:44px;background:#fff;border-bottom:1px solid #e8e8e8;display:flex;align-items:center;padding:0 18px;flex-shrink:0}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:12px;font-size:12px;color:#666}
+.content{flex:1;overflow-y:auto;padding:14px}
+.page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.page-title{font-size:15px;font-weight:600;color:#262626}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:4px;padding:6px 14px;border-radius:4px;border:1px solid #d9d9d9;background:#fff;color:#333;font-size:12px;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;line-height:1.2;user-select:none}
+.btn:hover{border-color:#40a9ff;color:#40a9ff}
+.btn.primary{background:#1890ff;border-color:#1890ff;color:#fff}
+.btn.primary:hover{background:#40a9ff;border-color:#40a9ff}
+.btn.success{background:#52c41a;border-color:#52c41a;color:#fff}
+.btn.success:hover{background:#73d13d}
+.btn.danger{background:#ff4d4f;border-color:#ff4d4f;color:#fff}
+.btn.danger:hover{background:#ff7875}
+.btn.sm{padding:3px 10px;font-size:11px}
+.btn.ghost-blue{color:#1890ff;border-color:#1890ff;background:#fff}
+.btn.ghost-blue:hover{background:#e6f7ff}
+.btn.ghost-red{color:#ff4d4f;border-color:#ff4d4f;background:#fff}
+.btn.ghost-red:hover{background:#fff1f0}
+.btn:disabled{opacity:.4;cursor:not-allowed;pointer-events:none}
+.card{background:#fff;border:1px solid #e8e8e8;border-radius:4px;margin-bottom:12px}
+.card-body{padding:12px 14px}
+.filter-grid{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:flex-end}
+.fi{display:flex;flex-direction:column;gap:3px}
+.fi label{font-size:11px;color:#8c8c8c}
+.fc{height:30px;padding:0 9px;border:1px solid #d9d9d9;border-radius:4px;font-size:12px;color:#333;background:#fff;font-family:inherit;outline:none;transition:border-color .15s}
+.fc:focus{border-color:#40a9ff;box-shadow:0 0 0 2px rgba(24,144,255,.12)}
+.fc.w110{width:110px}.fc.w130{width:130px}.fc.w150{width:150px}.fc.w170{width:170px}
+
+
+.table-toolbar{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;border-bottom:1px solid #f0f0f0}
+.t-info{font-size:12px;color:#8c8c8c}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px;min-width:1350px}
+th{background:#fafafa;color:#595959;font-weight:500;padding:9px 10px;text-align:left;border-bottom:1px solid #e8e8e8;white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid #f5f5f5;color:#333;white-space:nowrap;vertical-align:middle;background:#fff}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fff}
+.op-td{position:sticky;right:0;background:#fff;box-shadow:-2px 0 5px rgba(0,0,0,.06)}
+.op-td-head{position:sticky;right:0;background:#fafafa;box-shadow:-2px 0 5px rgba(0,0,0,.06)}
+.mode-tabs{display:flex;gap:0;margin-bottom:14px;border:1px solid #d9d9d9;border-radius:4px;overflow:hidden}
+.mode-tab{flex:1;padding:7px 0;text-align:center;font-size:12px;cursor:pointer;color:#595959;background:#fafafa;transition:all .15s;user-select:none}
+.mode-tab.active{background:#1890ff;color:#fff;font-weight:600}
+.mode-tab:first-child{border-right:1px solid #d9d9d9}
+.multi-member-list{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;max-height:180px;overflow-y:auto}
+.mm-row{display:flex;align-items:center;gap:8px;padding:6px 10px;background:#f5f9ff;border:1px solid #b3d4ff;border-radius:4px;font-size:12px}
+.mm-acc{font-weight:600;color:#096dd9;min-width:80px}
+.mm-uid{color:#8c8c8c;min-width:55px}
+.mm-lv{color:#8c8c8c}
+.mm-bal{color:#262626;margin-left:auto}
+.mm-del{cursor:pointer;color:#ffa39e;font-size:14px;padding:0 2px}
+.mm-del:hover{color:#ff4d4f}
+.badge{display:inline-flex;align-items:center;padding:2px 10px;border-radius:3px;font-size:11px;font-weight:600}
+.badge:before{display:none}
+.b-pending{background:#fff7e6;color:#d46b08;border:1px solid #ffd591}.b-pending:before{background:#fa8c16}
+.b-pass{background:#f6ffed;color:#389e0d;border:1px solid #b7eb8f}.b-pass:before{background:#52c41a}
+.b-reject{background:#fff1f0;color:#cf1322;border:1px solid #ffa39e}.b-reject:before{background:#ff4d4f}
+.dir-up{color:#52c41a;font-weight:600}.dir-down{color:#ff4d4f;font-weight:600}
+.tag{display:inline-block;padding:1px 6px;border-radius:3px;font-size:11px;border:1px solid}
+.tag-blue{background:#e6f7ff;color:#096dd9;border-color:#91d5ff}
+.tag-orange{background:#fff7e6;color:#d46b08;border-color:#ffd591}
+.mono{font-family:monospace;font-size:11px;color:#8c8c8c}
+.pager{display:flex;align-items:center;gap:5px;padding:10px 14px;justify-content:flex-end;border-top:1px solid #f0f0f0}
+.pager .tot{font-size:12px;color:#8c8c8c;margin-right:4px}
+.pgb{height:26px;min-width:26px;padding:0 7px;border:1px solid #d9d9d9;border-radius:4px;background:#fff;font-size:12px;cursor:pointer;color:#333;font-family:inherit;transition:all .15s}
+.pgb:hover{border-color:#40a9ff;color:#40a9ff}
+.pgb.cur{background:#1890ff;border-color:#1890ff;color:#fff}
+.pgb:disabled{opacity:.4;cursor:not-allowed}
+.pgs{height:26px;padding:0 6px;border:1px solid #d9d9d9;border-radius:4px;font-size:11px;background:#fff;font-family:inherit;margin-left:8px}
+.empty-state{text-align:center;padding:40px 0;color:#bfbfbf}
+.empty-state .eico{font-size:32px;margin-bottom:8px;opacity:.5}
+.empty-state p{font-size:13px}.empty-state a{color:#1890ff;cursor:pointer}
+
+/* overlay / modal / drawer */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:none;align-items:center;justify-content:center}
+.overlay.show{display:flex}
+.modal{background:#fff;border-radius:6px;box-shadow:0 8px 32px rgba(0,0,0,.18);display:flex;flex-direction:column;max-height:88vh}
+.modal.w500{width:500px;max-width:92vw}
+.modal.w620{width:620px;max-width:92vw}
+.mh{padding:14px 18px;border-bottom:1px solid #e8e8e8;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.mt{font-size:14px;font-weight:600;color:#262626}
+.mc-x{background:none;border:none;font-size:20px;cursor:pointer;color:#8c8c8c;line-height:1;padding:0;transition:color .15s}
+.mc-x:hover{color:#333}
+.mb{padding:16px 18px;overflow-y:auto;flex:1}
+.mf{padding:12px 18px;border-top:1px solid #e8e8e8;display:flex;justify-content:flex-end;gap:8px;flex-shrink:0}
+.drw-wrap{position:fixed;inset:0;z-index:200;pointer-events:none}
+.drw-mask{position:absolute;inset:0;background:rgba(0,0,0,.45);opacity:0;transition:opacity .22s;pointer-events:none}
+.drw-mask.show{opacity:1;pointer-events:auto}
+.drw{position:absolute;top:0;right:0;bottom:0;width:540px;background:#fff;transform:translateX(100%);transition:transform .25s cubic-bezier(.23,1,.32,1);pointer-events:auto;display:flex;flex-direction:column;box-shadow:-4px 0 16px rgba(0,0,0,.12)}
+.drw.show{transform:translateX(0)}
+.drw-hd{padding:14px 18px;border-bottom:1px solid #e8e8e8;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.drw-title{font-size:14px;font-weight:600;color:#262626}
+.drw-bd{flex:1;overflow-y:auto;padding:14px 18px}
+.drw-ft{padding:12px 18px;border-top:1px solid #e8e8e8;display:flex;justify-content:flex-end;gap:8px;flex-shrink:0}
+
+/* form */
+.sec-title{font-size:11px;color:#8c8c8c;border-bottom:1px solid #f0f0f0;padding-bottom:6px;margin-bottom:12px;font-weight:500;letter-spacing:.3px}
+.fr{margin-bottom:12px}
+.fr2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.fl{font-size:12px;color:#595959;margin-bottom:4px;font-weight:500}
+.fl .req{color:#ff4d4f}
+.fi-full{width:100%;height:32px;padding:0 10px;border:1px solid #d9d9d9;border-radius:4px;font-size:12px;color:#333;background:#fff;font-family:inherit;outline:none;transition:border-color .15s}
+.fi-full:focus{border-color:#40a9ff;box-shadow:0 0 0 2px rgba(24,144,255,.12)}
+.fi-full.ta{height:68px;padding:7px 10px;resize:none;line-height:1.5}
+.search-row{display:flex;gap:8px}
+.search-row .fi-full{flex:1}
+
+.member-box{background:#f5f9ff;border:1px solid #b3d4ff;border-radius:4px;padding:12px 14px;margin-bottom:14px}
+.member-box-title{font-size:11px;color:#1890ff;margin-bottom:8px;font-weight:600;display:flex;align-items:center;gap:5px}
+.member-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.mc-cell{display:flex;flex-direction:column;gap:2px}
+.mc-lbl{font-size:10px;color:#8c8c8c}
+.mc-val{font-size:12px;color:#262626;font-weight:600}
+.mc-val.neg{color:#ff4d4f}.mc-val.pos{color:#52c41a}
+
+.preset-quick{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.pq-btn{padding:4px 12px;border:1px solid #d9d9d9;border-radius:4px;font-size:12px;cursor:pointer;background:#fff;color:#333;font-family:inherit;transition:all .15s}
+.pq-btn:hover{border-color:#1890ff;color:#1890ff;background:#e6f7ff}
+.pq-btn.sel{border-color:#1890ff;color:#1890ff;background:#e6f7ff;font-weight:600}
+.aq-btn{padding:4px 14px;border:1px solid #d9d9d9;border-radius:4px;font-size:12px;cursor:pointer;background:#fff;color:#333;font-family:inherit;transition:all .15s;font-weight:500}
+.aq-btn:hover{border-color:#52c41a;color:#52c41a;background:#f6ffed}
+.aq-btn.sel{border-color:#52c41a;color:#52c41a;background:#f6ffed;font-weight:700}
+
+.pm-table{width:100%;border-collapse:collapse;font-size:12px}
+.pm-table th{background:#fafafa;padding:8px 10px;text-align:left;border-bottom:1px solid #e8e8e8;font-weight:500;color:#595959}
+.pm-table td{padding:8px 10px;border-bottom:1px solid #f5f5f5;vertical-align:middle}
+.pm-table tr:last-child td{border-bottom:none}
+.toggle{position:relative;display:inline-block;width:32px;height:18px}
+.toggle input{opacity:0;width:0;height:0}
+.tslide{position:absolute;inset:0;background:#d9d9d9;border-radius:9px;cursor:pointer;transition:.2s}
+.tslide:before{content:'';position:absolute;height:14px;width:14px;left:2px;bottom:2px;background:#fff;border-radius:50%;transition:.2s}
+.toggle input:checked + .tslide{background:#52c41a}
+.toggle input:checked + .tslide:before{transform:translateX(14px)}
+
+.det-grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.det-item{padding:8px 0;border-bottom:1px solid #f5f5f5;display:flex;gap:6px}
+.det-item:nth-child(odd){padding-right:16px}
+.det-item:nth-child(even){padding-left:16px;border-left:1px solid #f5f5f5}
+.det-lbl{font-size:11px;color:#8c8c8c;min-width:80px;flex-shrink:0}
+.det-val{font-size:12px;color:#262626;font-weight:500;word-break:break-all}
+.review-warn{background:#fffbe6;border:1px solid #ffe58f;border-radius:4px;padding:10px 12px;margin:12px 0}
+.review-warn p{font-size:11px;color:#8c8c8c;line-height:1.7;margin:0}
+
+.upload-area{border:2px dashed #d9d9d9;border-radius:4px;padding:28px;text-align:center;color:#8c8c8c;cursor:pointer;transition:all .15s;margin-bottom:12px}
+.upload-area:hover{border-color:#40a9ff;color:#40a9ff}
+.upload-tips{background:#fff7e6;border:1px solid #ffd591;border-radius:4px;padding:10px 12px}
+.upload-tips p{font-size:11px;color:#8c8c8c;line-height:1.8;margin:0}
+.upload-tips strong{color:#d46b08}
+
+.toast{position:fixed;top:18px;left:50%;transform:translateX(-50%);padding:9px 18px;border-radius:4px;font-size:13px;color:#fff;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.15);pointer-events:none;white-space:nowrap}
+
+</style>
+</head>
+<body>
+<div class="layout">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">P</div>
+      <div><div class="logo-text">平台管理</div><div class="logo-sub">Platform management</div></div>
+    </div>
+    <div class="menu-item">📊 數據匯總</div>
+    <div class="menu-item">📈 報表分析</div>
+    <div class="menu-item">👥 會員管理</div>
+    <div class="menu-item">🎮 遊戲管理</div>
+    <div class="menu-item">📋 日常運營</div>
+    <div class="menu-item">💰 充值管理</div>
+    <div class="menu-item">💸 提現管理</div>
+    <div class="menu-group">帳務管理</div>
+    <div class="menu-item active">💱 資金調整</div>
+    <div class="menu-item">✅ 稽核管理</div>
+    <div class="menu-item">📝 交易記錄</div>
+    <div class="menu-item">📊 報表管理</div>
+    <div class="menu-item">🏪 商城系統</div>
+    <div class="menu-item">🛡 風控管理</div>
+  </div>
+  <div class="main">
+    <div class="topbar">
+      <span style="font-size:12px;color:#8c8c8c">帳務管理 / <strong style="color:#333">資金調整</strong></span>
+      <div class="topbar-right"><span>JXMANAGER007</span><span>🌐</span></div>
+    </div>
+    <div class="content">
+      <div class="page-header">
+        <div class="page-title">資金調整</div>
+        <div class="btn-row">
+          <button class="btn primary" onclick="openDrawer()">＋ 新增調整</button>
+          <button class="btn" onclick="toast('匯出中…','info')">↓ 匯出</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <div class="filter-grid">
+            <div class="fi"><label>會員帳號</label><input class="fc w130" id="f-acc" placeholder="查詢帳號"></div>
+            <div class="fi"><label>User ID</label><input class="fc w110" id="f-uid" placeholder="查詢 ID"></div>
+            <div class="fi"><label>調整類型</label>
+              <select class="fc w150" id="f-type">
+                <option value="">全部</option>
+                <option>手動上分-活動彩金</option><option>手動上分-返水</option>
+                <option>手動上分-其他</option><option>手動上分-VIP彩金</option>
+              </select>
+            </div>
+            <div class="fi"><label>狀態</label>
+              <select class="fc w110" id="f-status">
+                <option value="">全部</option>
+                <option value="pass">通過</option><option value="reject">拒絕</option>
+              </select>
+            </div>
+            <div class="fi"><label>調整方向</label>
+              <select class="fc w110" id="f-dir">
+                <option value="">全部</option><option value="up">上分</option><option value="down">下分</option>
+              </select>
+            </div>
+            <div class="fi"><label>申請時間</label><input class="fc w170" id="f-at" placeholder="2026-06-01 ~ 2026-06-30"></div>
+            <div class="fi"><label>審核時間</label><input class="fc w170" id="f-rt" placeholder="2026-06-01 ~ 2026-06-30"></div>
+            <div style="display:flex;gap:6px;align-items:flex-end">
+              <button class="btn primary" onclick="doSearch()">🔍 查詢</button>
+              <button class="btn" onclick="doReset()">↺ 重置</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:0">
+        </div>
+        <div class="table-toolbar">
+          <span class="t-info">共 <strong id="total-count">8</strong> 筆紀錄</span>
+          <button class="btn sm" onclick="toast('匯出中…','info')">↓ 匯出列表</button>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+<th>狀態</th><th>申請時間</th><th>會員帳號</th><th>User ID</th>
+                <th>調整金額</th><th>幣別</th><th>調整類型</th><th>發放方式</th><th>彩金名稱</th><th>有效期(h)</th>
+                <th>操作人</th><th>備註</th><th>訂單號</th>
+                <th class="op-td-head">操作</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+        <div class="pager">
+          <span class="tot" id="pager-info">共 8 筆</span>
+          <button class="pgb" disabled>‹</button>
+          <button class="pgb cur">1</button>
+          <button class="pgb" disabled>›</button>
+          <select class="pgs"><option>10筆/頁</option><option>20筆/頁</option></select>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== 新增調整 Drawer ====== -->
+<div class="drw-wrap" id="drw-wrap">
+  <div class="drw-mask" id="drw-mask" onclick="closeDrawer()"></div>
+  <div class="drw" id="drw">
+    <div class="drw-hd">
+      <span class="drw-title">新增調整申請</span>
+      <button class="mc-x" onclick="closeDrawer()">×</button>
+    </div>
+    <div class="drw-bd">
+      <!-- mode switch -->
+      <div class="mode-tabs">
+        <div class="mode-tab active" id="tab-single" onclick="switchMode('single')">單筆新增</div>
+        <div class="mode-tab" id="tab-multi" onclick="switchMode('multi')">批量新增（逗號分隔）</div>
+      </div>
+
+      <!-- STEP 1 single -->
+      <div id="area-single">
+        <div class="sec-title">STEP 1 · 查詢會員</div>
+        <div class="fr">
+          <div class="fl">會員帳號 / User ID <span class="req">*</span></div>
+          <div class="search-row">
+            <input class="fi-full" id="d-search" placeholder="輸入會員帳號或 User ID">
+            <button class="btn primary" onclick="searchMember()">查詢</button>
+          </div>
+          <div style="font-size:11px;color:#bfbfbf;margin-top:6px;padding:5px 9px;background:#fafafa;border-radius:3px;border:1px solid #f0f0f0">
+            示範帳號：
+            <span style="color:#1890ff;cursor:pointer" onclick="qs('d-search','mobe617')">mobe617</span>、
+            <span style="color:#1890ff;cursor:pointer" onclick="qs('d-search','mobe0617')">mobe0617</span>、
+            <span style="color:#1890ff;cursor:pointer" onclick="qs('d-search','mag001')">mag001</span>、
+            <span style="color:#1890ff;cursor:pointer" onclick="qs('d-search','super002')">super002</span>、
+            <span style="color:#1890ff;cursor:pointer" onclick="qs('d-search','ch0616a')">ch0616a</span>
+          </div>
+        </div>
+        <div class="member-box" id="member-box" style="display:none">
+          <div class="member-box-title">✓ 會員資料</div>
+          <div class="member-grid">
+            <div class="mc-cell"><div class="mc-lbl">會員帳號</div><div class="mc-val" id="mc-acc">—</div></div>
+            <div class="mc-cell"><div class="mc-lbl">User ID</div><div class="mc-val" id="mc-uid">—</div></div>
+            <div class="mc-cell"><div class="mc-lbl">會員層級</div><div class="mc-val" id="mc-lv">—</div></div>
+            <div class="mc-cell"><div class="mc-lbl">錢包餘額</div><div class="mc-val" id="mc-bal">—</div></div>
+            <div class="mc-cell"><div class="mc-lbl">錢包幣別</div><div class="mc-val" id="mc-cur">—</div></div>
+            <div class="mc-cell"><div class="mc-lbl">充值總額</div><div class="mc-val" id="mc-dep">—</div></div>
+            <div class="mc-cell"><div class="mc-lbl">提現總額</div><div class="mc-val" id="mc-wit">—</div></div>
+            <div class="mc-cell"><div class="mc-lbl">會員利潤</div><div class="mc-val" id="mc-pft">—</div></div>
+            <div class="mc-cell"><div class="mc-lbl">最後充值</div><div class="mc-val" id="mc-dt">—</div></div>
+            <div class="mc-cell"><div class="mc-lbl">最後提現</div><div class="mc-val" id="mc-wt">—</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 1 multi -->
+      <div id="area-multi" style="display:none">
+        <div class="sec-title">STEP 1 · 輸入多個會員帳號</div>
+        <div class="fr">
+          <div class="fl">會員帳號 / User ID（用逗號隔開）<span class="req">*</span></div>
+          <div class="search-row">
+            <input class="fi-full" id="d-multi-input" placeholder="例如：mobe617, mag001, super002">
+            <button class="btn primary" onclick="addMultiMembers()">加入</button>
+          </div>
+          <div style="font-size:11px;color:#8c8c8c;margin-top:4px">輸入後點「加入」，可重複操作累積名單</div>
+          <div style="font-size:11px;color:#bfbfbf;margin-top:6px;padding:5px 9px;background:#fafafa;border-radius:3px;border:1px solid #f0f0f0;line-height:1.8">
+            示範（點擊直接帶入）：
+            <span style="color:#1890ff;cursor:pointer;font-weight:500" onclick="qsMulti('mobe617, mag001, super002, ch0616a, mag002')">全部5位</span>
+            &nbsp;｜&nbsp;
+            <span style="color:#1890ff;cursor:pointer" onclick="qsMulti('mobe617, mag001')">mobe617, mag001</span>、
+            <span style="color:#1890ff;cursor:pointer" onclick="qsMulti('super002, ch0616a')">super002, ch0616a</span>
+          </div>
+        </div>
+        <div id="multi-member-list" class="multi-member-list" style="display:none"></div>
+        <div id="multi-member-summary" style="font-size:11px;color:#1890ff;margin-bottom:12px;display:none"></div>
+      </div>
+
+      <!-- STEP 2 shared: preset -->
+      <div id="form-area" style="display:none">
+        <div class="sec-title">STEP 2 · 選擇資金預設快捷（選填）</div>
+        <div style="font-size:11px;color:#8c8c8c;margin-bottom:8px">點快捷名稱，下方出現金額按鈕，點金額即可帶入</div>
+        <div class="preset-quick" id="preset-quick-btns"></div>
+        <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+          <button class="btn sm ghost-blue" onclick="openPresetManage()">⚙ 管理預設快捷</button>
+        </div>
+
+        <div class="sec-title">STEP 3 · 填寫調整資訊</div>
+        <div class="fr2">
+          <div>
+            <div class="fl">調整方向 <span class="req">*</span></div>
+            <select class="fi-full" id="d-dir">
+              <option value="up">↑ 上分</option>
+            </select>
+          </div>
+          <div>
+            <div class="fl">調整金額 <span class="req">*</span></div>
+            <input class="fi-full" id="d-amount" type="number" placeholder="請輸入金額" min="0" oninput="clearAmtSel()">
+            <div id="amt-quick-btns" style="display:none;gap:5px;margin-top:6px;flex-wrap:wrap"></div>
+          </div>
+        </div>
+        <div class="fr2">
+          <div>
+            <div class="fl">調整類型 <span class="req">*</span></div>
+            <select class="fi-full" id="d-type">
+              <option value="">請選擇</option>
+              <option>手動上分-活動彩金</option><option>手動上分-返水</option>
+              <option>手動上分-其他</option><option>手動上分-VIP彩金</option>
+            </select>
+          </div>
+          <div>
+            <div class="fl">發放方式</div>
+            <select class="fi-full" id="d-delivery">
+              <option>中心錢包（無須領取）</option>
+              <option>彩金（需手動領取）</option>
+            </select>
+          </div>
+        </div>
+        <div class="fr2">
+          <div>
+            <div class="fl">彩金名稱</div>
+            <input class="fi-full" id="d-bonus" placeholder="選填">
+          </div>
+          <div>
+            <div class="fl">彩金有效期（小時）</div>
+            <input class="fi-full" id="d-expiry" type="number" placeholder="不填代表不限" min="0">
+          </div>
+        </div>
+        <div class="fr2">
+          <div>
+            <div class="fl">稽核金額</div>
+            <input class="fi-full" id="d-wager" type="number" placeholder="0" min="0">
+          </div>
+          <div>
+            <div class="fl">極光推送</div>
+            <select class="fi-full" id="d-push"><option>不推送</option><option>推送</option></select>
+          </div>
+        </div>
+        <div class="fr">
+          <div class="fl">備註</div>
+          <textarea class="fi-full ta" id="d-remark" placeholder="選填，審核時將顯示此欄位"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="drw-ft">
+      <button class="btn" onclick="closeDrawer()">取消</button>
+      <button class="btn primary" id="d-submit" style="display:none" onclick="submitAdj()">提交申請</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== 審核 Modal ====== -->
+<div class="overlay" id="review-ov">
+  <div class="modal w620">
+    <div class="mh"><span class="mt">審核申請</span><button class="mc-x" onclick="closeOv('review-ov')">×</button></div>
+    <div class="mb">
+      <div class="sec-title">申請資訊</div>
+      <div class="det-grid" id="review-det"></div>
+      <div class="review-warn"><p>⚠️ 通過後將立即執行資金調整，請確認以上資訊無誤後再操作。<br>拒絕後申請人將收到通知，本筆調整不會執行。</p></div>
+      <div class="fr" style="margin-bottom:0">
+        <div class="fl">審核備註</div>
+        <textarea class="fi-full ta" id="review-remark" placeholder="選填"></textarea>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn" onclick="closeOv('review-ov')">取消</button>
+      <button class="btn ghost-red" onclick="doAudit('reject')">✕ 拒絕</button>
+      <button class="btn success" onclick="doAudit('pass')">✓ 通過</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== 詳情 Modal ====== -->
+<div class="overlay" id="detail-ov">
+  <div class="modal w620">
+    <div class="mh"><span class="mt">調整詳情</span><button class="mc-x" onclick="closeOv('detail-ov')">×</button></div>
+    <div class="mb"><div class="det-grid" id="detail-det"></div></div>
+    <div class="mf"><button class="btn" onclick="closeOv('detail-ov')">關閉</button></div>
+  </div>
+</div>
+
+<!-- ====== 預設快捷管理 Modal ====== -->
+<div class="overlay" id="preset-ov">
+  <div class="modal w620">
+    <div class="mh"><span class="mt">管理資金預設快捷</span><button class="mc-x" onclick="closeOv('preset-ov')">×</button></div>
+    <div class="mb">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="display:flex;gap:8px">
+          <input class="fc w130" id="pm-search" placeholder="類型名稱" style="height:30px">
+          <select class="fc w150" id="pm-type-filter" style="height:30px">
+            <option value="">調整類型：全部</option>
+            <option>手動上分-活動彩金</option><option>手動上分-返水</option>
+            <option>手動上分-其他</option><option>手動上分-VIP彩金</option>
+          </select>
+          <button class="btn sm primary" onclick="filterPresets()">查詢</button>
+          <button class="btn sm" onclick="resetPresetFilter()">重置</button>
+        </div>
+        <button class="btn sm success" onclick="openPresetEdit(null)">＋ 新增</button>
+      </div>
+      <table class="pm-table">
+        <thead><tr><th>狀態</th><th>類型名稱</th><th>調整類型</th><th>金額</th><th>稽核倍數</th><th>備註</th><th>建立時間</th><th>操作</th></tr></thead>
+        <tbody id="pm-tbody"></tbody>
+      </table>
+    </div>
+    <div class="mf"><button class="btn" onclick="closeOv('preset-ov')">關閉</button></div>
+  </div>
+</div>
+
+<!-- ====== 編輯快捷 Modal ====== -->
+<div class="overlay" id="preset-edit-ov">
+  <div class="modal w500">
+    <div class="mh"><span class="mt" id="pe-title">新增預設快捷</span><button class="mc-x" onclick="closeOv('preset-edit-ov')">×</button></div>
+    <div class="mb">
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px"><input type="radio" name="pe-cur" value="CNY" checked style="accent-color:#1890ff"> CNY</label>
+        <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px"><input type="radio" name="pe-cur" value="USD" style="accent-color:#1890ff"> USD</label>
+      </div>
+      <div class="fr2">
+        <div><div class="fl">類型名稱 <span class="req">*</span></div><input class="fi-full" id="pe-name" placeholder="例如：每日獎金"></div>
+        <div><div class="fl">調整類型 <span class="req">*</span></div>
+          <select class="fi-full" id="pe-type">
+            <option value="">請選擇</option>
+            <option>手動上分-活動彩金</option><option>手動上分-返水</option>
+            <option>手動上分-其他</option><option>手動上分-VIP彩金</option>
+          </select>
+        </div>
+      </div>
+      <div class="fr">
+        <div class="fl">金額（多個用逗號分隔）<span class="req">*</span></div>
+        <input class="fi-full" id="pe-amounts" placeholder="例如：100,200,300,400,500">
+        <div style="font-size:11px;color:#8c8c8c;margin-top:3px">新增調整時可快速點選這些金額</div>
+      </div>
+      <div class="fr2">
+        <div><div class="fl">稽核倍數 <span class="req">*</span></div><input class="fi-full" id="pe-wager" type="number" placeholder="1" min="0"></div>
+        <div></div>
+      </div>
+      <div class="fr" style="margin-bottom:0">
+        <div class="fl">備註</div><input class="fi-full" id="pe-remark" placeholder="選填">
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn" onclick="closeOv('preset-edit-ov')">取消</button>
+      <button class="btn primary" onclick="savePreset()">💾 儲存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============ DATA ============
+var tableData = [
+  {id:'f7SkEuh9sDren96sDHZ765',status:'pending',applyTime:'2026/06/18 13:02:34',auditTime:'—',amount:18,currency:'CNY',type:'手動上分-活動彩金',dir:'up',delivery:'彩金（需手動領取）',bonusName:'測試模組',expiry:999999,account:'mag001',uid:136004,applicant:'JXMANAGER007',auditor:'—',remark:'活動補發'},
+  {id:'mxeot6AXfnkPfDeV2nTij',status:'pending',applyTime:'2026/06/18 13:02:34',auditTime:'—',amount:18,currency:'CNY',type:'手動上分-活動彩金',dir:'up',delivery:'彩金（需手動領取）',bonusName:'測試模組',expiry:999999,account:'mag002',uid:136005,applicant:'JXMANAGER007',auditor:'—',remark:'活動補發'},
+  {id:'vSU4a9ef3vXa6smE9FzCmB',status:'pending',applyTime:'2026/06/18 13:01:04',auditTime:'—',amount:18,currency:'CNY',type:'手動上分-活動彩金',dir:'up',delivery:'彩金（需手動領取）',bonusName:'測試模組',expiry:99999999,account:'mag001',uid:136004,applicant:'JXMANAGER007',auditor:'—',remark:'補發測試'},
+  {id:'kHfFPQVS8dX4b3z5wZhyJg',status:'pass',applyTime:'2026/06/17 17:35:14',auditTime:'2026/06/17 17:35:28',amount:25,currency:'CNY',type:'手動上分-返水',dir:'up',delivery:'中心錢包（無須領取）',bonusName:'—',expiry:'—',account:'ch0616a',uid:136001,applicant:'ch0616a',auditor:'JXMANAGER007',remark:'返水補發'},
+  {id:'btrySwaEgooR6RNTjcQHMd',status:'pending',applyTime:'2026/06/17 13:02:53',auditTime:'—',amount:100,currency:'CNY',type:'手動上分-活動彩金',dir:'up',delivery:'中心錢包（無須領取）',bonusName:'—',expiry:'—',account:'mobe617',uid:136003,applicant:'mobe617',auditor:'—',remark:''},
+  {id:'ubj69Lk6ptX6qqdFhNF7Y9',status:'pending',applyTime:'2026/06/17 13:02:31',auditTime:'—',amount:100,currency:'CNY',type:'手動上分-活動彩金',dir:'up',delivery:'中心錢包（無須領取）',bonusName:'—',expiry:'—',account:'mobe617',uid:136003,applicant:'mobe617',auditor:'—',remark:''},
+  {id:'eGAhP91CX34TYz9FuDRmDb',status:'pass',applyTime:'2026/06/17 13:00:25',auditTime:'2026/06/17 13:00:49',amount:100,currency:'CNY',type:'手動上分-活動彩金',dir:'up',delivery:'中心錢包（無須領取）',bonusName:'—',expiry:'—',account:'mobe617',uid:136003,applicant:'mobe617',auditor:'JXMANAGER007',remark:''},
+  {id:'mELK2U5W9KiesCpKPxCWK9',status:'pass',applyTime:'2026/06/16 19:06:27',auditTime:'2026/06/16 19:06:41',amount:200,currency:'CNY',type:'手動上分-活動彩金',dir:'up',delivery:'中心錢包（無須領取）',bonusName:'—',expiry:'—',account:'super002',uid:135991,applicant:'super002',auditor:'JXMANAGER007',remark:'VIP補贈'},
+];
+
+var memberDB = {
+  'mobe617': {account:'mobe617',uid:136003,level:'一般',balance:17,currency:'CNY',deposit:3000,withdraw:0,profit:-3000,depTime:'2026/06/17 12:10:33',witTime:'—'},
+  'mobe0617':{account:'mobe617',uid:136003,level:'一般',balance:17,currency:'CNY',deposit:3000,withdraw:0,profit:-3000,depTime:'2026/06/17 12:10:33',witTime:'—'},
+  'mag001':  {account:'mag001',uid:136004,level:'VIP1',balance:120,currency:'CNY',deposit:5000,withdraw:200,profit:-4800,depTime:'2026/06/18 10:22:00',witTime:'2026/06/15 09:00:00'},
+  'mag002':  {account:'mag002',uid:136005,level:'一般',balance:55,currency:'CNY',deposit:1000,withdraw:0,profit:-1000,depTime:'2026/06/18 13:00:00',witTime:'—'},
+  'super002':{account:'super002',uid:135991,level:'VIP3',balance:580,currency:'CNY',deposit:12000,withdraw:3000,profit:-9000,depTime:'2026/06/16 15:40:00',witTime:'2026/06/10 11:30:00'},
+  'ch0616a': {account:'ch0616a',uid:136001,level:'VIP2',balance:340,currency:'CNY',deposit:8000,withdraw:1500,profit:-6500,depTime:'2026/06/17 17:30:00',witTime:'2026/06/14 10:00:00'},
+  '136003':  {account:'mobe617',uid:136003,level:'一般',balance:17,currency:'CNY',deposit:3000,withdraw:0,profit:-3000,depTime:'2026/06/17 12:10:33',witTime:'—'},
+  '136004':  {account:'mag001',uid:136004,level:'VIP1',balance:120,currency:'CNY',deposit:5000,withdraw:200,profit:-4800,depTime:'2026/06/18 10:22:00',witTime:'2026/06/15 09:00:00'},
+  '135991':  {account:'super002',uid:135991,level:'VIP3',balance:580,currency:'CNY',deposit:12000,withdraw:3000,profit:-9000,depTime:'2026/06/16 15:40:00',witTime:'2026/06/10 11:30:00'},
+  '136001':  {account:'ch0616a',uid:136001,level:'VIP2',balance:340,currency:'CNY',deposit:8000,withdraw:1500,profit:-6500,depTime:'2026/06/17 17:30:00',witTime:'2026/06/14 10:00:00'},
+  '136005':  {account:'mag002',uid:136005,level:'一般',balance:55,currency:'CNY',deposit:1000,withdraw:0,profit:-1000,depTime:'2026/06/18 13:00:00',witTime:'—'},
+};
+
+var presets = [
+  {id:1,active:true,name:'每日獎金',type:'手動上分-活動彩金',amounts:[100,200,300,400,500],wager:1,remark:'',created:'2026/06/16 18:55:47'},
+  {id:2,active:true,name:'VIP禮金',type:'手動上分-VIP彩金',amounts:[500,1000,2000],wager:2,remark:'限VIP使用',created:'2026/06/10 10:00:00'},
+  {id:3,active:false,name:'返水補發',type:'手動上分-返水',amounts:[50,100,200],wager:0,remark:'',created:'2026/06/01 09:30:00'},
+];
+var nextPresetId = 4;
+var filteredData = tableData.slice();
+var currentRow = null;
+var editingPresetId = null;
+var selectedPresetName = '';
+
+// ============ TABLE ============
+function renderTable(data) {
+  filteredData = data;
+  document.getElementById('total-count').textContent = data.length;
+  document.getElementById('pager-info').textContent = '共 ' + data.length + ' 筆';
+  var tbody = document.getElementById('tbody');
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="15"><div class="empty-state"><div class="eico">📭</div><p>暫無調整紀錄，可點擊右上方 <a onclick="openDrawer()">「新增調整」</a> 建立申請。</p></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map(function(r) {
+    var sb = r.dir==='up' ? '<span class="badge b-pass">↑ 上分</span>' : '<span class="badge b-reject">↓ 下分</span>';
+    var dl = r.dir==='up' ? '<span class="dir-up">↑ 上分</span>' : '<span class="dir-down">↓ 下分</span>';
+    var op = '<button class="btn sm" onclick="openDetail(\'' + r.id + '\')">查看</button>';
+    var bonus = r.bonusName && r.bonusName !== '—' ? '<span class="tag tag-orange">' + r.bonusName + '</span>' : '—';
+    return '<tr>'
++ '<td>' + sb + '</td>'
+      + '<td>' + r.applyTime + '</td>'
+      + '<td><span class="tag tag-blue">' + r.account + '</span></td>'
+      + '<td style="color:#8c8c8c">' + r.uid + '</td>'
+      + '<td><strong>' + r.amount + '</strong></td>'
+      + '<td>' + r.currency + '</td>'
+      + '<td>' + r.type + '</td>'
+      + '<td>' + r.delivery + '</td>'
+      + '<td>' + bonus + '</td>'
+      + '<td style="color:#8c8c8c">' + r.expiry + '</td>'
+      + '<td>' + r.applicant + '</td>'
+      + '<td style="color:#8c8c8c;max-width:90px;overflow:hidden;text-overflow:ellipsis">' + (r.remark || '—') + '</td>'
+      + '<td><span class="mono" title="' + r.id + '">' + r.id.substring(0,10) + '…</span></td>'
+      + '<td class="op-td">' + op + '</td>'
+      + '</tr>';
+  }).join('');
+}
+
+// ============ SEARCH ============
+function doSearch() {
+  var acc = document.getElementById('f-acc').value.trim().toLowerCase();
+  var uid = document.getElementById('f-uid').value.trim();
+  var type = document.getElementById('f-type').value;
+  var dir = document.getElementById('f-dir').value;
+  var res = tableData.filter(function(r) {
+    if (acc && r.account.toLowerCase().indexOf(acc)<0) return false;
+    if (uid && String(r.uid).indexOf(uid)<0) return false;
+    if (type && r.type!==type) return false;
+    if (dir && r.dir!==dir) return false;
+    return true;
+  });
+  renderTable(res);
+}
+function doReset() {
+  ['f-acc','f-uid','f-at'].forEach(function(id){ document.getElementById(id).value=''; });
+  ['f-type','f-dir'].forEach(function(id){ document.getElementById(id).selectedIndex=0; });
+  renderTable(tableData.slice());
+}
+
+// ============ DRAWER ============
+function openDrawer() {
+  drwMode = 'single';
+  document.getElementById('drw-mask').classList.add('show');
+  document.getElementById('drw').classList.add('show');
+  resetDrawer();
+  switchMode('single');
+}
+function closeDrawer() {
+  document.getElementById('drw-mask').classList.remove('show');
+  document.getElementById('drw').classList.remove('show');
+}
+function resetDrawer() {
+  document.getElementById('member-box').style.display='none';
+  document.getElementById('form-area').style.display='none';
+  document.getElementById('d-submit').style.display='none';
+  document.getElementById('d-search').value='';
+  document.getElementById('d-amount').value='';
+  document.getElementById('amt-quick-btns').style.display='none';
+  document.getElementById('amt-quick-btns').innerHTML='';
+  document.getElementById('d-remark').value='';
+  document.getElementById('d-bonus').value='';
+  document.getElementById('d-expiry').value='';
+  document.getElementById('d-wager').value='';
+  document.getElementById('d-type').selectedIndex=0;
+  document.getElementById('d-dir').selectedIndex=0;
+  selectedPresetName = '';
+  document.querySelectorAll('.pq-btn').forEach(function(b){b.classList.remove('sel');});
+}
+
+// ============ MODE SWITCH ============
+function switchMode(mode) {
+  drwMode = mode;
+  document.getElementById('tab-single').className = 'mode-tab' + (mode==='single' ? ' active' : '');
+  document.getElementById('tab-multi').className = 'mode-tab' + (mode==='multi' ? ' active' : '');
+  document.getElementById('area-single').style.display = mode==='single' ? 'block' : 'none';
+  document.getElementById('area-multi').style.display = mode==='multi' ? 'block' : 'none';
+  document.getElementById('form-area').style.display = 'none';
+  document.getElementById('d-submit').style.display = 'none';
+  document.getElementById('member-box').style.display = 'none';
+  multiMembers = [];
+  renderMultiList();
+}
+
+// ============ MULTI MEMBER ============
+function addMultiMembers() {
+  var raw = document.getElementById('d-multi-input').value.trim();
+  if (!raw) { toast('請輸入帳號','warn'); return; }
+  var keys = raw.split(/[,，\s]+/).map(function(k){ return k.trim().toLowerCase(); }).filter(Boolean);
+  var added = 0, notFound = [];
+  keys.forEach(function(k) {
+    var m = memberDB[k];
+    if (!m) { notFound.push(k); return; }
+    var dup = multiMembers.some(function(x){ return x.uid === m.uid; });
+    if (!dup) { multiMembers.push(m); added++; }
+  });
+  document.getElementById('d-multi-input').value = '';
+  renderMultiList();
+  if (notFound.length) toast('查無：' + notFound.join('、'), 'warn');
+  if (added) toast('已加入 ' + added + ' 位會員', 'success');
+  if (multiMembers.length > 0) {
+    document.getElementById('form-area').style.display = 'block';
+    document.getElementById('d-submit').style.display = 'inline-flex';
+    renderPresetBtns();
+  }
+}
+
+function renderMultiList() {
+  var wrap = document.getElementById('multi-member-list');
+  var summary = document.getElementById('multi-member-summary');
+  if (!multiMembers.length) {
+    wrap.style.display = 'none'; wrap.innerHTML = '';
+    summary.style.display = 'none'; summary.textContent = '';
+    return;
+  }
+  wrap.style.display = 'flex';
+  wrap.innerHTML = multiMembers.map(function(m, idx) {
+    return '<div class="mm-row">'
+      + '<span class="mm-acc">' + m.account + '</span>'
+      + '<span class="mm-uid">ID:' + m.uid + '</span>'
+      + '<span class="mm-lv">' + m.level + '</span>'
+      + '<span class="mm-bal">餘額 ' + m.balance + ' ' + m.currency + '</span>'
+      + '<span class="mm-del" onclick="removeMultiMember(' + idx + ')" title="移除">×</span>'
+      + '</div>';
+  }).join('');
+  summary.style.display = 'block';
+  summary.textContent = '共 ' + multiMembers.length + ' 位會員，提交後將各建立一筆調整紀錄';
+}
+
+function removeMultiMember(idx) {
+  multiMembers.splice(idx, 1);
+  renderMultiList();
+  if (!multiMembers.length) {
+    document.getElementById('form-area').style.display = 'none';
+    document.getElementById('d-submit').style.display = 'none';
+  }
+}
+
+// ============ SINGLE MEMBER ============
+function searchMember() {
+  var key = document.getElementById('d-search').value.trim().toLowerCase();
+  if (!key) { toast('請輸入會員帳號或 User ID','warn'); return; }
+  var m = memberDB[key];
+  if (!m) { toast('查無此會員，請確認帳號或 User ID','error'); document.getElementById('member-box').style.display='none'; document.getElementById('form-area').style.display='none'; document.getElementById('d-submit').style.display='none'; return; }
+  document.getElementById('mc-acc').textContent=m.account;
+  document.getElementById('mc-uid').textContent=m.uid;
+  document.getElementById('mc-lv').textContent=m.level;
+  document.getElementById('mc-bal').textContent=m.balance+' '+m.currency;
+  document.getElementById('mc-cur').textContent=m.currency;
+  document.getElementById('mc-dep').textContent=m.deposit.toLocaleString();
+  document.getElementById('mc-wit').textContent=m.withdraw.toLocaleString();
+  var pe=document.getElementById('mc-pft'); pe.textContent=m.profit.toLocaleString(); pe.className='mc-val '+(m.profit<0?'neg':'pos');
+  document.getElementById('mc-dt').textContent=m.depTime;
+  document.getElementById('mc-wt').textContent=m.witTime;
+  document.getElementById('member-box').style.display='block';
+  document.getElementById('form-area').style.display='block';
+  document.getElementById('d-submit').style.display='inline-flex';
+  renderPresetBtns();
+}
+
+
+// ============ PRESET ============
+function renderPresetBtns() {
+  var active = presets.filter(function(p){ return p.active; });
+  var wrap = document.getElementById('preset-quick-btns');
+  if (!active.length) { wrap.innerHTML='<span style="font-size:11px;color:#bfbfbf">暫無已啟用快捷</span>'; return; }
+  wrap.innerHTML = active.map(function(p) {
+    return '<button class="pq-btn" id="pqb-'+p.id+'" onclick="applyPreset('+p.id+')" title="'+p.type+'">'+p.name+'</button>';
+  }).join('');
+}
+
+function applyPreset(id) {
+  var p = presets.find(function(x){ return x.id===id; });
+  if (!p) return;
+  var btn = document.getElementById('pqb-'+id);
+  var isSelected = btn.classList.contains('sel');
+  document.querySelectorAll('.pq-btn').forEach(function(b){ b.classList.remove('sel'); });
+  var aqWrap = document.getElementById('amt-quick-btns');
+  if (isSelected) {
+    aqWrap.style.display='none'; aqWrap.innerHTML='';
+    document.getElementById('d-amount').value='';
+    selectedPresetName = '';
+    return;
+  }
+  btn.classList.add('sel');
+  selectedPresetName = p.name;
+  var sel = document.getElementById('d-type');
+  for (var i=0;i<sel.options.length;i++) { if (sel.options[i].text===p.type){ sel.selectedIndex=i; break; } }
+  document.getElementById('d-wager').value=p.wager;
+  document.getElementById('d-amount').value='';
+  aqWrap.innerHTML = p.amounts.map(function(a){
+    return '<button class="aq-btn" onclick="pickAmt('+a+',this)">'+a+'</button>';
+  }).join('');
+  aqWrap.style.display='flex';
+}
+
+function pickAmt(val, el) {
+  document.getElementById('d-amount').value=val;
+  document.querySelectorAll('.aq-btn').forEach(function(b){ b.classList.remove('sel'); });
+  el.classList.add('sel');
+}
+function clearAmtSel() {
+  document.querySelectorAll('.aq-btn').forEach(function(b){ b.classList.remove('sel'); });
+}
+
+// ============ SUBMIT ============
+function submitAdj() {
+  var amount = parseFloat(document.getElementById('d-amount').value);
+  var type = document.getElementById('d-type').value;
+  var remark = document.getElementById('d-remark').value.trim();
+  var dir = document.getElementById('d-dir').value;
+  if (!amount||amount<=0){ toast('請填寫調整金額','error'); return; }
+  if (!type){ toast('請選擇調整類型','error'); return; }
+
+  var now=new Date(); var ts=fmt(now);
+  var members = [];
+  if (drwMode === 'single') {
+    var acc = document.getElementById('mc-acc').textContent;
+    var uid = parseInt(document.getElementById('mc-uid').textContent);
+    members = [{account:acc, uid:uid}];
+  } else {
+    members = multiMembers.map(function(m){ return {account:m.account, uid:m.uid}; });
+    if (!members.length) { toast('請先加入會員','error'); return; }
+  }
+
+  members.forEach(function(m) {
+    var bonusNameVal = document.getElementById('d-bonus').value || selectedPresetName || '—';
+    tableData.unshift({
+      id: Math.random().toString(36).substr(2,20).toUpperCase(),
+      status:'pass', applyTime:ts, auditTime:ts,
+      amount:amount, currency:'CNY', type:type, dir:dir,
+      delivery:document.getElementById('d-delivery').value,
+      bonusName:bonusNameVal,
+      expiry:document.getElementById('d-expiry').value||'—',
+      account:m.account, uid:m.uid,
+      applicant:'JXMANAGER007', auditor:'JXMANAGER007', remark:remark
+    });
+  });
+
+  renderTable(tableData.slice());
+  closeDrawer();
+  toast('已新增 '+members.length+' 筆調整紀錄', 'success');
+}
+
+// ============ SINGLE REVIEW ============
+function openReview(id) {
+  currentRow=tableData.find(function(r){ return r.id===id; });
+  if (!currentRow) return;
+  document.getElementById('review-det').innerHTML=buildDet(currentRow);
+  document.getElementById('review-remark').value='';
+  document.getElementById('review-ov').classList.add('show');
+}
+function doAudit(result) {
+  if (!currentRow) return;
+  var now=new Date(); var ts=fmt(now);
+  currentRow.status=result==='pass'?'pass':'reject';
+  currentRow.auditTime=ts;
+  currentRow.auditor='JXMANAGER007';
+  var rm=document.getElementById('review-remark').value;
+  if (rm) currentRow.remark+=(currentRow.remark?' | ':'')+rm;
+  renderTable(filteredData.map(function(r){ return tableData.find(function(x){ return x.id===r.id; })||r; }));
+  closeOv('review-ov');
+  toast(result==='pass'?'審核通過':'已拒絕', result==='pass'?'success':'error');
+}
+
+// ============ DETAIL ============
+function openDetail(id) {
+  var r=tableData.find(function(x){ return x.id===id; });
+  if (!r) return;
+  document.getElementById('detail-det').innerHTML=buildDet(r);
+  document.getElementById('detail-ov').classList.add('show');
+}
+function buildDet(r) {
+  var sl=r.dir==='up'?'↑ 上分':'↓ 下分';
+  var dl=r.dir==='up'?'↑ 上分':'↓ 下分';
+  var items=[['訂單號',r.id],['狀態',sl],['申請時間',r.applyTime],['會員帳號',r.account],['User ID',r.uid],['調整方向',dl],['調整金額',r.amount+' '+r.currency],['調整類型',r.type],['發放方式',r.delivery],['彩金名稱',r.bonusName],['有效期(h)',r.expiry],['操作人',r.applicant],['備註',r.remark||'—'],['','']];
+  return items.map(function(it){ return '<div class="det-item"><div class="det-lbl">'+it[0]+'</div><div class="det-val">'+it[1]+'</div></div>'; }).join('');
+}
+
+
+// ============ PRESET MANAGE ============
+function openPresetManage() {
+  renderPresetTable(presets);
+  document.getElementById('pm-search').value='';
+  document.getElementById('pm-type-filter').selectedIndex=0;
+  document.getElementById('preset-ov').classList.add('show');
+}
+function filterPresets() {
+  var name=document.getElementById('pm-search').value.trim().toLowerCase();
+  var type=document.getElementById('pm-type-filter').value;
+  renderPresetTable(presets.filter(function(p){ return (!name||p.name.toLowerCase().indexOf(name)>=0)&&(!type||p.type===type); }));
+}
+function resetPresetFilter(){ document.getElementById('pm-search').value=''; document.getElementById('pm-type-filter').selectedIndex=0; renderPresetTable(presets); }
+function renderPresetTable(list) {
+  document.getElementById('pm-tbody').innerHTML=list.map(function(p){
+    var tog='<label class="toggle"><input type="checkbox"'+(p.active?' checked':'')+' onchange="togglePreset('+p.id+',this.checked)"><span class="tslide"></span></label>';
+    return '<tr><td>'+tog+'</td><td><strong>'+p.name+'</strong></td><td>'+p.type+'</td><td>'+p.amounts.join(', ')+'</td><td>'+p.wager+'x</td><td style="color:#8c8c8c">'+(p.remark||'—')+'</td><td class="mono">'+p.created+'</td><td><button class="btn sm ghost-blue" onclick="openPresetEdit('+p.id+')" style="margin-right:4px">編輯</button><button class="btn sm ghost-red" onclick="deletePreset('+p.id+')">刪除</button></td></tr>';
+  }).join('') || '<tr><td colspan="8" style="text-align:center;color:#bfbfbf;padding:20px">暫無資料</td></tr>';
+}
+function togglePreset(id,val){ var p=presets.find(function(x){return x.id===id;}); if(p){p.active=val; toast(val?'已啟用「'+p.name+'」':'已停用「'+p.name+'」','info');} }
+function deletePreset(id){ if(!confirm('確定刪除此快捷？'))return; presets=presets.filter(function(p){return p.id!==id;}); renderPresetTable(presets); toast('已刪除','info'); }
+function openPresetEdit(id) {
+  editingPresetId=id;
+  document.getElementById('pe-title').textContent=id?'編輯預設快捷':'新增預設快捷';
+  if (id) {
+    var p=presets.find(function(x){return x.id===id;});
+    document.getElementById('pe-name').value=p.name;
+    var sel=document.getElementById('pe-type'); for(var i=0;i<sel.options.length;i++){if(sel.options[i].text===p.type){sel.selectedIndex=i;break;}}
+    document.getElementById('pe-amounts').value=p.amounts.join(',');
+    document.getElementById('pe-wager').value=p.wager;
+    document.getElementById('pe-remark').value=p.remark||'';
+  } else {
+    document.getElementById('pe-name').value='';
+    document.getElementById('pe-type').selectedIndex=0;
+    document.getElementById('pe-amounts').value='';
+    document.getElementById('pe-wager').value='1';
+    document.getElementById('pe-remark').value='';
+  }
+  document.getElementById('preset-edit-ov').classList.add('show');
+}
+function savePreset() {
+  var name=document.getElementById('pe-name').value.trim();
+  var type=document.getElementById('pe-type').value;
+  var amtsStr=document.getElementById('pe-amounts').value.trim();
+  var wager=parseFloat(document.getElementById('pe-wager').value)||0;
+  var remark=document.getElementById('pe-remark').value.trim();
+  if(!name){toast('請填寫類型名稱','error');return;}
+  if(!type){toast('請選擇調整類型','error');return;}
+  if(!amtsStr){toast('請填寫金額','error');return;}
+  var amounts=amtsStr.split(/[,，\s]+/).map(function(v){return parseFloat(v.trim());}).filter(function(v){return !isNaN(v)&&v>0;});
+  if(!amounts.length){toast('金額格式不正確','error');return;}
+  var now=new Date();
+  if(editingPresetId){
+    var p=presets.find(function(x){return x.id===editingPresetId;});
+    p.name=name;p.type=type;p.amounts=amounts;p.wager=wager;p.remark=remark;
+  } else {
+    presets.push({id:nextPresetId++,active:true,name:name,type:type,amounts:amounts,wager:wager,remark:remark,created:fmt(now)});
+  }
+  renderPresetTable(presets);
+  closeOv('preset-edit-ov');
+  toast(editingPresetId?'已更新快捷':'已新增快捷','success');
+}
+
+// ============ UTILS ============
+function closeOv(id){ document.getElementById(id).classList.remove('show'); }
+document.querySelectorAll('.overlay').forEach(function(el){
+  el.addEventListener('click',function(e){ if(e.target===el) el.classList.remove('show'); });
+});
+function fmt(d){ return d.getFullYear()+'/'+(d.getMonth()+1).toString().padStart(2,'0')+'/'+d.getDate().toString().padStart(2,'0')+' '+d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0')+':'+d.getSeconds().toString().padStart(2,'0'); }
+function qs(id,val){ document.getElementById(id).value=val; }
+function qsMulti(val){ document.getElementById('d-multi-input').value=val; addMultiMembers(); }
+function toast(msg,type){
+  var el=document.createElement('div');
+  var bg=type==='success'?'#52c41a':type==='error'?'#ff4d4f':type==='warn'?'#fa8c16':'#1890ff';
+  el.className='toast'; el.style.background=bg;
+  el.textContent=(type==='success'?'✓ ':type==='error'?'✕ ':'ℹ ')+msg;
+  document.body.appendChild(el); setTimeout(function(){ el.remove(); },2800);
+}
+
+// ============ INIT ============
+renderTable(tableData.slice());
+</script>
+</body>
+</html>
